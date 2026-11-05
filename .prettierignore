@@ -1,0 +1,11 @@
+node_modules
+.next
+.data
+.plannotator
+.env*
+bun.lock
+src/components/iso
+src/components/rune-data.ts
+public/fonts
+AGENTS.md
+next-env.d.ts
