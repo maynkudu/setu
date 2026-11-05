@@ -85,3 +85,5 @@ A scheduled session becoming held is an elapsed-time rule, not proof of attendan
 Run migrations separately from builds using a session-pooler or direct connection. See the [README](../README.md) for setup and the [database reference](DATABASE.md) for migration checksums. Place Vercel functions near Supabase and monitor connection pressure, cron errors, and undelivered notifications.
 
 The [CI workflow](../.github/workflows/ci.yml) verifies against an isolated PostgreSQL 17 service. It applies migrations twice to check repeatability, runs the focused programme integration suite, and checks formatting, lint, build, and types. It requires no hosted database or OAuth credentials.
+
+The personal-administrator assertion sets an explicit fixture email and restores the previous environment value afterward. Production administrator configuration is not a test prerequisite.

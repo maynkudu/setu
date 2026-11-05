@@ -164,7 +164,14 @@ describe("Hosted-Postgres-compatible mentorship workflow", () => {
         reason: "Escalation",
       }).success,
     ).toBe(false);
-    expect(emailRole("maynkudu@gmail.com")).toBe("admin");
+    const originalAdmins = process.env.ADMIN_EMAILS;
+    try {
+      process.env.ADMIN_EMAILS = "setu-test-admin@gmail.com";
+      expect(emailRole("setu-test-admin@gmail.com")).toBe("admin");
+    } finally {
+      if (originalAdmins === undefined) delete process.env.ADMIN_EMAILS;
+      else process.env.ADMIN_EMAILS = originalAdmins;
+    }
   });
   test("a student can submit one unmatched request", async () => {
     const request = {

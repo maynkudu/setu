@@ -152,6 +152,8 @@ For browser verification with local accounts, `bun --env-file=.env.test.local sc
 
 The [GitHub Actions workflow](.github/workflows/ci.yml) runs formatting, lint, migrations twice, the database workflow tests, build, and typecheck against an isolated PostgreSQL service. The latest local workflow suite has 12 passing tests and 59 assertions. It covers permissions, concurrent assignment, scheduling, private content, chunked uploads, feedback, and retention. Build, lint, typecheck, formatting, and Effect diagnostics pass locally.
 
+The personal-admin assertion supplies and restores its own test email configuration. The suite does not require the project owner's email to be an administrator in CI or another developer's environment.
+
 The supplied hosted Supabase connection was migrated and checked. All 21 SETU tables have RLS enabled, with no `anon` or `authenticated` schema/table access. No sample accounts were added to that database. Google sign-in initiation succeeds with the supplied client. Browser checks also cover approval, assignment, sessions, messages, ending, feedback, document form submission, mobile navigation, and figure keyboard controls. The download handler returned matching file bytes.
 
 Vercel deployment, the complete Google callback round trip, real email delivery, and the deployed cron schedule remain unverified. Register the production origin and callback, set Vercel environment values, and verify those integrations after hosting.
