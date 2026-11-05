@@ -1,0 +1,49 @@
+name: Verify SETU
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: setu-ci-only
+          POSTGRES_DB: setu
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:setu-ci-only@127.0.0.1:5432/setu
+      BETTER_AUTH_SECRET: setu-ci-signing-secret-only-at-least-32-characters
+      BETTER_AUTH_URL: https://setu.localhost:1355
+      ADMIN_EMAILS: setu-test-admin@iitm.ac.in
+      LOCAL_EMAIL_CAPTURE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+      - run: bun install --frozen-lockfile
+      - run: bun run format:check
+      - run: bun run lint
+      - run: bun run db:migrate
+      - run: bun run db:migrate
+      - run: bun test --timeout 20000 tests
+      - run: bun run build
+      - run: bun run typecheck

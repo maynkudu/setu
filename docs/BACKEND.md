@@ -83,3 +83,5 @@ Maintenance marks elapsed sessions held, ends mentorships after ten held session
 A scheduled session becoming held is an elapsed-time rule, not proof of attendance. Participants can mark it missed within the permitted window. The daily scheduler means status and physical deletion can lag until its next successful run. Read authorization enforces the 30-day shared-content deadline without waiting for cleanup.
 
 Run migrations separately from builds using a session-pooler or direct connection. See the [README](../README.md) for setup and the [database reference](DATABASE.md) for migration checksums. Place Vercel functions near Supabase and monitor connection pressure, cron errors, and undelivered notifications.
+
+The [CI workflow](../.github/workflows/ci.yml) verifies against an isolated PostgreSQL 17 service. It applies migrations twice to check repeatability, runs the focused programme integration suite, and checks formatting, lint, build, and types. It requires no hosted database or OAuth credentials.
