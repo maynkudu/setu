@@ -2,6 +2,8 @@
 
 SETU connects degree-level IIT Madras BS students with alumni mentors. IIC reviews eligibility, assigns mentors, and follows up on programme outcomes. The app includes a public introduction and separate student, mentor, and administrator workspaces.
 
+The public introduction uses an interactive Anatomy desk figure, Rune icons, Lenis scrolling, and a bridge-mark preloader. Public policy pages and association information share a footer. The role workspaces keep navigation and programme controls separate from that public layout.
+
 Accounts and programme data live in hosted Supabase PostgreSQL. Google sign-in runs through Better Auth. SETU does not use Supabase Auth, browser database access, or sample accounts in production.
 
 ## Set up the app
@@ -148,7 +150,7 @@ bun --env-file=.env.test.local test --timeout 20000 tests
 
 For browser verification with local accounts, `bun --env-file=.env.test.local scripts/qa-fixtures.ts` writes signed fixture states under ignored `.plannotator/setu-app/fixtures/`. It refuses remote databases and production mode. It creates no public authentication bypass. These fixtures are for isolated development only.
 
-GitHub Actions runs formatting, lint, migrations twice, the database workflow tests, build, and typecheck against an isolated PostgreSQL service. The latest local workflow suite has 12 passing tests and 59 assertions. It covers permissions, concurrent assignment, scheduling, private content, chunked uploads, feedback, and retention. Build, lint, typecheck, formatting, and Effect diagnostics pass locally.
+The [GitHub Actions workflow](.github/workflows/ci.yml) runs formatting, lint, migrations twice, the database workflow tests, build, and typecheck against an isolated PostgreSQL service. The latest local workflow suite has 12 passing tests and 59 assertions. It covers permissions, concurrent assignment, scheduling, private content, chunked uploads, feedback, and retention. Build, lint, typecheck, formatting, and Effect diagnostics pass locally.
 
 The supplied hosted Supabase connection was migrated and checked. All 21 SETU tables have RLS enabled, with no `anon` or `authenticated` schema/table access. No sample accounts were added to that database. Google sign-in initiation succeeds with the supplied client. Browser checks also cover approval, assignment, sessions, messages, ending, feedback, document form submission, mobile navigation, and figure keyboard controls. The download handler returned matching file bytes.
 

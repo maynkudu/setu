@@ -1,0 +1,222 @@
+:root {
+  --motion-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+}
+.setu-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--brand-dark);
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  pointer-events: none;
+}
+.preloader-brand {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.preloader-brand svg {
+  width: 90px;
+  height: 60px;
+}
+.preloader-brand span {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 33px;
+  letter-spacing: -1.7px;
+  color: var(--white-soft);
+  font-weight: 800;
+}
+.preloader-bridge {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: bridge-draw 600ms var(--motion-out) forwards;
+}
+.line-mask {
+  display: block;
+  overflow: clip;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.line-mask > span {
+  display: block;
+}
+[data-site-ready="true"] .line-mask > span {
+  animation: line-arrive 720ms var(--motion-out) both;
+}
+[data-site-ready="true"] .line-mask:nth-child(2) > span {
+  animation-delay: 70ms;
+}
+[data-site-ready="true"] .line-mask:nth-child(3) > span {
+  animation-delay: 140ms;
+}
+[data-site-ready="true"] .public-hero > .mentorship-figure {
+  animation: figure-arrive 800ms 140ms var(--motion-out) both;
+}
+.btn {
+  transition:
+    background 180ms,
+    color 180ms,
+    box-shadow 220ms,
+    transform 160ms var(--motion-out);
+}
+.btn.primary:hover {
+  box-shadow: 0 7px 18px #651d2624;
+  transform: translateY(-2px);
+}
+.btn.primary:active,
+.btn.secondary:active {
+  transform: translateY(0) scale(0.97);
+}
+.btn .rune,
+.nav-button .rune,
+.icon-button .rune {
+  transition: transform 230ms var(--motion-out);
+}
+.btn:hover .rune,
+.btn:focus-visible .rune {
+  transform: translateY(-2px) rotate(-7deg);
+}
+.nav-button:hover .rune,
+.nav-button:focus-visible .rune {
+  transform: scale(1.12);
+}
+.icon-button:hover .rune {
+  animation: icon-nudge 420ms var(--motion-out);
+}
+.nav-button {
+  transition:
+    color 160ms,
+    background 160ms;
+}
+.workspace-content {
+  animation: workspace-enter 240ms var(--motion-out);
+}
+.review-details {
+  animation: workspace-enter 220ms var(--motion-out);
+}
+.session-item,
+.document-row {
+  transition: background 180ms;
+}
+.session-item:hover,
+.document-row:hover {
+  background: #fdfbf8;
+}
+.panel input,
+.panel textarea,
+.entry-card input {
+  transition:
+    border-color 160ms,
+    box-shadow 160ms;
+}
+.panel input:focus,
+.panel textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px #c0040409;
+}
+.message:last-child {
+  animation: message-arrive 180ms var(--motion-out);
+}
+.toast:not(:empty) {
+  animation: toast-arrive 220ms var(--motion-out);
+}
+.availability {
+  transition: background 220ms;
+}
+.public-nav .plain-link {
+  position: relative;
+}
+.public-nav .plain-link:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 230ms var(--motion-out);
+}
+.public-nav .plain-link:hover:after {
+  transform: scaleX(1);
+}
+@keyframes bridge-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes line-arrive {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes figure-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes workspace-enter {
+  from {
+    opacity: 0.35;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes message-arrive {
+  from {
+    opacity: 0.4;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes toast-arrive {
+  from {
+    opacity: 0;
+    bottom: 12px;
+  }
+  to {
+    opacity: 1;
+    bottom: 20px;
+  }
+}
+@keyframes icon-nudge {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(-10deg);
+  }
+  65% {
+    transform: rotate(6deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .setu-preloader {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

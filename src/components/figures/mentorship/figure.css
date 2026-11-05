@@ -1,0 +1,216 @@
+.mentorship-figure.iso[data-theme="light"] {
+  --anatomy-paper: #eee6da;
+  --anatomy-face: #fff5dd;
+  --anatomy-top: #fcf4e7;
+  --anatomy-shade-0: #ac8b77;
+  --anatomy-shade-1: #c1a18a;
+  --anatomy-shade-2: #d8bda4;
+  --anatomy-shade-3: #e7d5bf;
+  --anatomy-hi: #fff2dc;
+  --anatomy-mid: #dcc4a7;
+  --anatomy-lo: #98745f;
+  --anatomy-faint: #bda18a;
+  --anatomy-lit: #f5d08c;
+  --anatomy-lit-top: #f0c778;
+  --anatomy-lit-shade: #cfa15a;
+  --anatomy-weight: 0.65px;
+  --anatomy-halo: #33110e;
+  --anatomy-halo-opacity: 0.18;
+  --anatomy-dot: #ddbd89;
+}
+.mentorship-figure {
+  margin: 0;
+  padding: 24px 24px 21px;
+  background: var(--brand-dark);
+  border: 1px solid #76303a;
+  border-radius: 20px;
+  min-width: 0;
+  color: var(--white-soft);
+  overflow: hidden;
+}
+.figure-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: #ebd0c9;
+}
+.figure-header > span:first-child {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  color: var(--gold);
+}
+.mentorship-figure > .iso-svg {
+  margin: 5px 0 -5px;
+  min-width: 0;
+  width: 100%;
+  max-height: 370px;
+}
+.request-folder {
+  --anatomy-hi: #ffe6b3;
+  --anatomy-lo: #9b7543;
+}
+.figure-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  border-top: 1px solid #8c454b;
+  padding-top: 16px;
+}
+.figure-controls button {
+  padding: 11px 5px;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #f3dfd6;
+  transition: background 180ms;
+}
+.figure-controls button > span {
+  display: block;
+  font-size: 9px;
+  color: #deba91;
+  margin-bottom: 6px;
+}
+.figure-controls button[aria-pressed="true"] {
+  background: #fff6e7;
+  color: #4b1b20;
+  padding-left: 11px;
+}
+.figure-controls button[aria-pressed="true"] > span {
+  color: #9c5d3f;
+}
+.figure-controls button:focus-visible {
+  outline-color: var(--gold);
+}
+.mentorship-figure figcaption {
+  display: grid;
+  gap: 7px;
+  min-height: 113px;
+  padding-top: 20px;
+}
+.mentorship-figure figcaption strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.mentorship-figure figcaption > span {
+  font-size: 11px;
+  line-height: 1.65;
+  color: #ead3cb;
+  max-width: 330px;
+}
+.mentorship-figure figcaption > small {
+  font-size: 9px;
+  color: #dab3a9;
+  margin-top: 8px;
+}
+@media (max-width: 620px) {
+  .mentorship-figure {
+    padding: 21px 17px 18px;
+    max-width: 430px;
+    width: 100%;
+    margin: auto;
+  }
+  .figure-controls button {
+    font-size: 10px;
+  }
+  .mentorship-figure figcaption {
+    min-height: 116px;
+  }
+  .mentorship-figure > .iso-svg {
+    margin-top: 16px;
+  }
+  .figure-header {
+    font-size: 9px;
+  }
+}
+.figure-controls {
+  position: relative;
+}
+.figure-controls button {
+  position: relative;
+  z-index: 1;
+  padding-left: 11px;
+}
+.figure-controls button[aria-pressed="true"] {
+  background: transparent;
+}
+.figure-selection {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  bottom: 0;
+  width: calc((100% - 10px) / 3);
+  border-radius: 8px;
+  background: #fff6e7;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.folder-page {
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mentorship-figure:hover .folder-page {
+  transform: translateY(-7px);
+}
+.screen-row {
+  transform-box: fill-box;
+  transform-origin: left;
+  opacity: 0.65;
+}
+.mentorship-figure[data-stage="2"] .screen-row {
+  animation: screen-read 2200ms ease-in-out infinite;
+}
+.mentorship-figure:hover .screen-row {
+  animation: screen-hover 1100ms ease-in-out infinite;
+}
+.screen-row-second {
+  animation-delay: 120ms !important;
+}
+.screen-row-third {
+  animation-delay: 240ms !important;
+}
+.mentorship-figure[data-visible="false"] * {
+  animation-play-state: paused !important;
+}
+.mentorship-figure:hover .desk-display {
+  filter: brightness(1.2);
+}
+.desk-display {
+  transition: filter 300ms;
+}
+.mentorship-figure:hover .request-folder {
+  --anatomy-lit-top: #ffdfa0;
+}
+@keyframes screen-read {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes screen-hover {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scaleX(0.88);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mentorship-figure:hover .folder-page {
+    transform: none;
+  }
+  .mentorship-figure .screen-row {
+    animation: none !important;
+    opacity: 1;
+  }
+  .figure-selection,
+  .folder-page,
+  .desk-display {
+    transition: none;
+  }
+}
