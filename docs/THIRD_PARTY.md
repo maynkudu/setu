@@ -9,6 +9,21 @@ SETU includes the following third-party assets and source. Their notices remain 
 | DM Sans fonts                    | [Google Fonts DM Sans](https://fonts.google.com/specimen/DM+Sans), hosted locally under `public/fonts/`.                               | SIL Open Font License 1.1, [full notice](../public/fonts/licenses/dm-sans-OFL.txt). |
 | Manrope fonts                    | [Google Fonts Manrope](https://fonts.google.com/specimen/Manrope), hosted locally under `public/fonts/`.                               | SIL Open Font License 1.1, [full notice](../public/fonts/licenses/manrope-OFL.txt). |
 
+## Public design and motion sources
+
+- [BLANK Overlay Menu](https://ui.aryank.space/components/overlay-menu), `reg_overlay-menu`, installed through the authenticated `@compronents` registry and adapted in `src/components/public-site/overlay-menu.tsx`.
+- [BLANK Iris Outro Footer](https://ui.aryank.space/components/iris-outro-footer), `reg_iris-outro-footer`, installed and adapted in `src/components/public-site/iris-outro-footer.tsx`.
+- [BLANK Animated Footer](https://ui.aryank.space/components/animated-footer), `reg_animated-footer`, adapted in `src/components/blank/animated-footer.tsx`. Its original hand photographs are served as local WebP assets in `public/footer/`.
+- [BLANK Fluid Refraction](https://ui.aryank.space/components/fluid-refraction), `reg_fluid-refraction`, adapted in `src/components/blank/fluid-refraction/` for the transparent footer logo, lazy loading and idle suspension.
+- [BLANK Clip Mask Transition Page](https://ui.aryank.space/pages/clip-mask-transition-page), adapted to React route commits in `SiteMotion` and `page-transitions.css`.
+- [Hairline Terrain source](https://github.com/lucasmarkes/hairline/blob/main/packages/hairline/src/figures/terrain.ts), inspected for pointer falloff, depth ordering and return to rest. SETU's continuous height surface and descent path are original.
+- [BLANK Ribbon Stroke Scroll](https://ui.aryank.space/components/ribbon-stroke-scroll), `reg_ribbon-stroke-scroll`, informed the SVG path-length animation in `connection-art.tsx`. The SETU paths and hero composition are original.
+- [BLANK Switch On Hover Tabs](https://ui.aryank.space/components/switch-on-hover-tabs), `reg_switch-on-hover-tabs`, installed and adapted to click-based GSAP workspace navigation.
+- [BLANK Better Auth Provisioning Gate](https://ui.aryank.space/backend/better-auth-provisioning-gate), informed fresh-provider admission checks. SETU checks active grants as well as student domains.
+- [GSAP](https://gsap.com/), version 3.15.1. Its package declares the [standard no-charge license](https://gsap.com/standard-license).
+
+BLANK source retains its source attribution. No separate license declaration was returned by the selected registry items. Registry credentials and the private design pack are not included. The supplied SETU logo is a project asset and is used with its original proportions. Browser and Apple icons crop its sparkle onto a burgundy square.
+
 Dependency packages retain their own licenses in their distributed packages. The dependency lockfile pins the versions used by this release.
 
 The supplied project documents and private design references are not distributed in this repository. IIT Madras informs the programme context and palette; the app does not include an IITM logo or claim official institutional endorsement.

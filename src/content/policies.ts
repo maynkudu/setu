@@ -7,7 +7,7 @@ export const policies = {
       {
         title: "Account and profile data",
         paragraphs: [
-          "Google supplies your name, email address and verified account identity. SETU uses your email domain to determine whether you can apply as a student, alumni mentor or authorised IIC staff member. SETU does not receive your Google password.",
+          "Google supplies your name, email address and verified account identity. Student access uses configured email domains or an IIC account grant. Alumni mentors need an active IIC whitelist grant, and staff accounts must be on the administrator list. SETU does not receive your Google password.",
           "Your profile contains the details you submit, including your roll number, interests, career background and optional contact information. IIC reviews student and mentor eligibility before they can use mentorship features.",
         ],
       },
@@ -126,6 +126,7 @@ export const policies = {
         title: "Essential authentication cookies",
         paragraphs: [
           "Better Auth creates session cookies and temporary cookies needed to complete Google sign-in. They identify your authenticated session and protect the sign-in flow. Production authentication cookies use secure transport and restrict script access where appropriate.",
+          "Your session cookie lasts seven days and refreshes during active use. Google sign-in uses an encrypted temporary cookie that expires after ten minutes and is removed when the callback is processed.",
           "These cookies are required for account features. Public introduction and policy pages can be read without signing in.",
         ],
       },
@@ -158,13 +159,13 @@ export const policies = {
         title: "Navigation and controls",
         paragraphs: [
           "Use Tab to move between controls and Enter or Space to activate buttons. Public pages include a skip-to-content link. Dialogs support Escape, and form fields have visible labels.",
-          "The landing-page illustration has keyboard-accessible stage controls. Use the left and right arrow keys to switch stages, or Home and End to move to the first and last stage.",
+          "Use arrow keys to switch the landing page's guidance examples. Programme steps and FAQs open with Enter or Space. The process graph also supports arrow keys to move a raised peak and Escape to restore its shape.",
         ],
       },
       {
         title: "Motion preferences",
         paragraphs: [
-          "SETU respects your device's reduced-motion setting. It disables smooth-scroll interpolation, skips the animated preloader and stops the illustration's automatic tour. The information remains available without animation.",
+          "SETU respects your device's reduced-motion setting. It removes decorative travel, the logo ripple and page-transition animation, and opens programme steps and FAQs immediately. The information and controls remain available without animation.",
         ],
       },
       {

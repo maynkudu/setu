@@ -270,21 +270,21 @@ export function requireCondition(
   if (!condition) throw new AppError(status, message);
 }
 export function allowedDomains(role: "student" | "mentor") {
-  const fallback =
-    role === "student"
-      ? "ds.study.iitm.ac.in,es.study.iitm.ac.in"
-      : "alumni.iitm.ac.in";
-  return (
-    process.env[
-      role === "student" ? "STUDENT_EMAIL_DOMAINS" : "MENTOR_EMAIL_DOMAINS"
-    ] ?? fallback
-  )
-    .split(",")
-    .map((v) => v.trim().toLowerCase().replace(/^@/, ""))
-    .filter(Boolean);
+  if (role === "mentor") return [];
+  return [
+    ...new Set(
+      (
+        process.env.STUDENT_EMAIL_DOMAINS ??
+        "ds.study.iitm.ac.in,es.study.iitm.ac.in"
+      )
+        .split(",")
+        .map((v) => v.trim().toLowerCase().replace(/^@/, ""))
+        .filter(Boolean),
+    ),
+  ];
 }
 export function emailRole(email: string): Role | null {
-  const normalized = email.toLowerCase();
+  const normalized = email.trim().toLowerCase();
   const staff = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((v) => v.trim().toLowerCase())
@@ -292,6 +292,5 @@ export function emailRole(email: string): Role | null {
   if (staff.includes(normalized)) return "admin";
   const domain = normalized.split("@")[1];
   if (allowedDomains("student").includes(domain)) return "student";
-  if (allowedDomains("mentor").includes(domain)) return "mentor";
   return null;
 }

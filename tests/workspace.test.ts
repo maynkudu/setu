@@ -111,7 +111,7 @@ describe("Hosted-Postgres-compatible mentorship workflow", () => {
   test("email domains are exact and role assignment cannot grant arbitrary staff access", () => {
     expect(emailRole("student@ds.study.iitm.ac.in")).toBe("student");
     expect(emailRole("student@es.study.iitm.ac.in")).toBe("student");
-    expect(emailRole("mentor@alumni.iitm.ac.in")).toBe("mentor");
+    expect(emailRole("mentor@alumni.iitm.ac.in")).toBeNull();
     expect(emailRole("student@ds.study.iitm.ac.in.evil.com")).toBeNull();
     expect(emailRole("user@gmail.com")).toBeNull();
     expect(emailRole("unlisted@iitm.ac.in")).toBeNull();

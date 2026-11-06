@@ -1,6 +1,8 @@
 # System design
 
-SETU is one Next.js application with a private PostgreSQL database and a small number of external integrations. The public introduction is mostly static. Authenticated pages load role-specific data on the server; client forms call protected route handlers.
+SETU is one Next.js application with a private PostgreSQL database and a small number of external integrations. The landing, About and policy content is prerendered. Client components add GSAP artwork, guidance controls and a shared curtain menu. Public navigation uses Next.js links and native scrolling; it does not call the programme API. Authenticated pages check identity on the server. A client boot component shows skeletons and fetches a protected snapshot. View selection uses native history immediately; background API requests refresh data afterward.
+
+Public motion includes GSAP disclosures, a Canvas isometric height surface, local ASCII hand assets and a lazily initialized WebGL logo ripple. These effects remain in the browser and suspend offscreen. React route transitions use the browser View Transitions API; workspace section changes retain their existing immediate navigation.
 
 ## Boundaries
 
@@ -39,11 +41,13 @@ The implemented boundaries map to these sources.
 
 ## Identity and programme access
 
-Google verifies the email. SETU assigns a permitted role from server configuration or an active test exception. Account identity and programme approval are separate states. A student can sign in with an eligible Google account and still wait for IIC to confirm degree-level status.
+Google verifies the email. SETU assigns a permitted role from server configuration or an active IIC account grant. Account identity and programme approval are separate states. A student can sign in with an eligible Google account and still wait for IIC to confirm degree-level status.
+
+Google sign-in starts on the configured application origin. Better Auth stores encrypted, ten-minute state in a browser cookie and validates it with PKCE before exchanging the callback code. Missing or mismatched browser state is rejected before session creation. Local tests exercise this path with mocked provider responses; a live Google round trip still requires deployment verification.
 
 Every protected request checks the session, verified email, and current role allowance. Every programme operation then checks eligibility, ownership, and the operation's state rules. An administrator's broad programme access does not include private messages, documents, or detailed session records.
 
-This separation lets IIC grant external evaluation accounts without claiming that an email whitelist proves institutional eligibility. It also lets access revocation block later requests without waiting for an old session to expire.
+Mentors always require active grants. Sessions use persistent seven-day cookies, renewed at most daily during active use. This separation lets IIC grant mentor invitations and student exceptions without claiming that an email whitelist proves institutional eligibility. It also lets access revocation block later requests without waiting for an old session to expire.
 
 ## Request and assignment flow
 
@@ -70,7 +74,7 @@ The database supplies the concurrency guarantee. Partial unique indexes prevent 
 
 ## Persistence and consistency
 
-Domain mutations and their in-app notifications commit together. A saved response means the database accepted the mutation. The browser then refreshes its snapshot. Other browsers refresh every 30 seconds while visible and on focus.
+Domain mutations and their in-app notifications commit together. A saved response means the database accepted the mutation. The browser then refreshes its snapshot. Other browsers refresh every 30 seconds while visible and on focus. Navigation refreshes are abortable and superseded results cannot replace a newer snapshot. Loading an already selected view never waits on those requests.
 
 The snapshot queries run independently in parallel. They are not one repeatable-read transaction, so a refresh during another write can briefly include records from different commit times. Actions re-read the records they lock before mutation. The initial release accepts this display behavior; stronger snapshot consistency can be added if it becomes necessary.
 

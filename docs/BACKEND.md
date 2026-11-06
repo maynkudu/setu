@@ -4,11 +4,13 @@ Next.js route handlers provide SETU's backend. Better Auth owns Google identity 
 
 ## Authentication and authorization
 
-[auth.ts](../src/lib/auth.ts) creates Better Auth lazily. It uses a Kysely PostgreSQL dialect configured for the private `setu` schema. The Google provider requires a verified email and asks the user to select an account. There are no password, email-link, or other social providers.
+[auth.ts](../src/lib/auth.ts) creates and reuses one Better Auth instance per process, including development module reloads. It uses a Kysely PostgreSQL dialect configured for the private `setu` schema. The Google provider requires a verified email and asks the user to select an account. There are no password, email-link, or other social providers.
 
-Before creating a user, the hook resolves the email's permitted role. [domain.ts](../src/lib/domain.ts) checks explicit admin emails, student domains, and mentor domains. [access.ts](../src/lib/access.ts) then checks active database exceptions for otherwise ineligible emails. Role is a server-controlled Better Auth additional field with `input: false`.
+[auth-origin.ts](../src/lib/auth-origin.ts) validates `BETTER_AUTH_URL` and supplies its HTTP(S) origin. Entry redirects to that origin before initiating Google OAuth, then consumes a one-time `?start=google` marker. `account.storeStateStrategy: "cookie"` stores encrypted OAuth state in a ten-minute HttpOnly, SameSite=Lax cookie. Better Auth validates state, expiry and PKCE before token exchange. Missing or mismatched state cannot create a session. Error callbacks retain their specific codes. Configuration changes require a new server process because the auth instance is cached across development reloads.
 
-`identity()` reads the Better Auth session and revalidates verified email and current permitted role on every protected request. A changed domain rule or revoked external grant can block an existing account. Test access never changes an existing account to a different role or creates an administrator.
+The `user.validateUserInfo` hook checks fresh provider identity at creation, linking and OAuth sign-in, following the [BLANK provisioning gate](https://ui.aryank.space/backend/better-auth-provisioning-gate) mechanism. The creation hook assigns a server-controlled role with `input: false`. [domain.ts](../src/lib/domain.ts) checks explicit administrator emails and exact student domains. [access.ts](../src/lib/access.ts) checks active database grants for other accounts. Mentors require active IIC grants; no alumni email-domain admission exists.
+
+Sessions expire after 604800 seconds and refresh during use after 86400 seconds. Cookies persist across browser closure. Cookie caching remains disabled. `identity()` revalidates the session, verified email and current role on every protected request, so revoked mentor grants block existing sessions. Grants never change an existing account's role or create administrators. Login pages preserve a current session; explicit account switching signs out before starting Google selection.
 
 [workspace.ts](../src/lib/workspace.ts) creates the application profile on first access. Admin profiles start approved. Student and mentor profiles start draft. All actions except profile editing and resubmission require approved programme eligibility. Pair membership checks protect private content independently of role.
 
@@ -26,13 +28,13 @@ Better Auth uses database-backed rate limiting with a 60-second window and maxim
 | `/api/sessions/[id]`  | GET       | Authenticated `.ics` calendar download.                                                                        |
 | `/api/cron`           | GET       | Bearer-secret maintenance and notification flush.                                                              |
 
-JSON actions are validated with a discriminated Zod union. They include profile submission, resubmission, availability, requests, reviews, assignments, sessions, messages, document removal, ending, feedback, check-ins, follow-up resolution, notification reads, and test-access grants and revocations. See [domain.ts](../src/lib/domain.ts) for field limits and exact enums.
+JSON actions are validated with a discriminated Zod union. They include profile submission, resubmission, availability, requests, reviews, assignments, sessions, messages, document removal, ending, feedback, check-ins, follow-up resolution, notification reads, and account grants and revocations. See [domain.ts](../src/lib/domain.ts) for field limits and exact enums.
 
 Browser mutations must have an `Origin` matching `BETTER_AUTH_URL`. The routes authenticate before acting and return private, no-store responses. Files use attachment disposition and `X-Content-Type-Options: nosniff`. Calendar text escapes user-controlled delimiters and newlines.
 
 ## Database service and Effect boundaries
 
-[db.ts](../src/lib/db.ts) exports the `Database` Effect service. `Database.Default` owns the shared pool. A global process reference reuses the pool across module reloads. Effect `Config` validates connection limits and statement timeout; `Config.redacted` keeps credentials out of ordinary configuration output.
+[db.ts](../src/lib/db.ts) exports the `Database` Effect service. `Database.Default` owns the shared pool. A global process reference reuses the pool across module reloads. TCP keepalive and a five-minute connection lifetime reduce stale long-lived connections; idle failures log a sanitized error code. Effect `Config` validates connection limits and statement timeout; `Config.redacted` keeps credentials out of ordinary configuration output.
 
 `query()` executes parameterized SQL and validates the result with a Zod row schema. `transact()` acquires a client, begins a transaction, commits on success, rolls back on failure, and releases the client in a finalizer. A failed rollback discards the connection. The Promise adapter marks transactions uninterruptible because an interrupted `pg` Promise could still use the client after release.
 
@@ -87,3 +89,13 @@ Run migrations separately from builds using a session-pooler or direct connectio
 The [CI workflow](../.github/workflows/ci.yml) verifies against an isolated PostgreSQL 17 service. It applies migrations twice to check repeatability, runs the focused programme integration suite, and checks formatting, lint, build, and types. It requires no hosted database or OAuth credentials.
 
 The personal-administrator assertion sets an explicit fixture email and restores the previous environment value afterward. Production administrator configuration is not a test prerequisite.
+
+[auth.test.ts](../tests/auth.test.ts) runs sign-in initiation and callback requests against real cookie generation, state validation, database adapters and session creation. Google exchange and profile responses are mocked. It compares the generated PKCE challenge with the exchange verifier, rejects missing and mismatched browser state before exchange, and verifies persistent cookies. The complete Google provider round trip remains unverified.
+
+## Database diagnostics
+
+`bun --env-file=.env.local run db:check` runs read-only connectivity, table-presence and Better Auth schema checks. Migrations reject transaction-pooler port 6543; their session advisory lock requires a direct/session URL through `MIGRATION_DATABASE_URL`. Runtime parameterized queries use fully qualified schema names and do not require session search paths.
+
+The intermittent generic Better Auth schema-validation error did not reproduce against the hosted database. Schema checks remain enabled. Reusing the auth instance avoids repeated adapter initialization on development reloads, but does not prove the original intermittent connection failure is resolved. Check TLS, database availability and aggregate pool budgets when it recurs.
+
+A separate session-pooler connection reported `EMAXCONNSESSION` with a 15-client limit before any SQL ran. This is observed connection pressure, not an auth-table mismatch. The migration runner rejects mixed loopback-runtime/hosted-migration configuration. Clear `MIGRATION_DATABASE_URL` in local fixture environments.

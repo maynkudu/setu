@@ -414,7 +414,6 @@ function Stats({ data }: { data: Workspace }) {
             <Icon name={s.icon} />
           </div>
           <strong>{s.value}</strong>
-          <small>Current programme data</small>
         </div>
       ))}
     </div>
@@ -783,12 +782,12 @@ export function AccessManagement({
             form.reset();
         }}
       >
-        <h2>Whitelist test accounts</h2>
+        <h2>Grant programme access</h2>
         <p className="muted">
-          Allow specific Google accounts outside the IITM domains to test a
-          student or mentor role. They must still complete a profile and receive
-          eligibility approval. Admin access is configured separately by the
-          site owner.
+          Whitelist alumni mentors or grant student account access. Every mentor
+          needs an active grant. Both roles must complete a profile and receive
+          IIC eligibility approval. Administrator access is configured
+          separately.
         </p>
         <label>
           Email addresses
@@ -813,7 +812,7 @@ export function AccessManagement({
               name="reason"
               required
               maxLength={300}
-              placeholder="For example, project evaluation"
+              placeholder="For example, alumni mentor invitation"
             />
           </label>
         </div>
@@ -822,9 +821,9 @@ export function AccessManagement({
         </button>
       </form>
       <section className="panel stack">
-        <h2>Account exceptions</h2>
+        <h2>Account grants</h2>
         {!data.accessGrants.length && (
-          <Empty title="No test accounts have been whitelisted" icon="shield" />
+          <Empty title="No accounts have been whitelisted" icon="shield" />
         )}
         {data.accessGrants.map((g) => (
           <div className="admin-record row between wrap" key={g.email}>
@@ -846,7 +845,7 @@ export function AccessManagement({
                   void save({ action: "revokeAccess", email: g.email })
                 }
               >
-                Revoke test access
+                Revoke access
               </button>
             )}
           </div>

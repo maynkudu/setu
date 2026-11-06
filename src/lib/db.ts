@@ -45,13 +45,23 @@ export function getPool() {
     max: settings.max,
     idleTimeoutMillis: 20000,
     connectionTimeoutMillis: 10000,
+    keepAlive: true,
+    maxLifetimeSeconds: 300,
     statement_timeout: settings.timeout,
     idle_in_transaction_session_timeout: 30000,
     application_name: "setu",
   });
   // An idle client error must not terminate the server process or disclose connection details.
-  pool.on("error", () => {
-    Effect.runSync(Effect.logError("An idle database connection was closed."));
+  pool.on("error", (error) => {
+    const code =
+      "code" in error &&
+      typeof error.code === "string" &&
+      /^[A-Z0-9_]+$/.test(error.code)
+        ? error.code
+        : "unknown";
+    Effect.runSync(
+      Effect.logError("An idle database connection was closed.", { code }),
+    );
   });
   return (globalDatabase.setuPool = pool);
 }

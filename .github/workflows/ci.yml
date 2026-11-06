@@ -29,6 +29,8 @@ jobs:
       DATABASE_URL: postgresql://postgres:setu-ci-only@127.0.0.1:5432/setu
       BETTER_AUTH_SECRET: setu-ci-signing-secret-only-at-least-32-characters
       BETTER_AUTH_URL: https://setu.localhost:1355
+      GOOGLE_CLIENT_ID: setu-local-google
+      GOOGLE_CLIENT_SECRET: setu-local-provider
       ADMIN_EMAILS: setu-test-admin@iitm.ac.in
       LOCAL_EMAIL_CAPTURE: "true"
     steps:

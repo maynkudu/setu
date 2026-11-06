@@ -1,9 +1,8 @@
 import { headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { identity } from "@/lib/auth";
-import { getWorkspace } from "@/lib/workspace";
 import { AppError } from "@/lib/domain";
-import { WorkspaceApp } from "@/components/workspace";
+import { WorkspaceBoot } from "@/components/workspace-boot";
 import Link from "next/link";
 export const dynamic = "force-dynamic";
 export default async function WorkspacePage({
@@ -35,14 +34,13 @@ export default async function WorkspacePage({
     ].includes(section)
   )
     notFound();
-  let data;
   try {
-    data = await getWorkspace(await identity(await headers()));
+    await identity(await headers());
   } catch (error) {
     if (error instanceof AppError && error.status === 401)
       redirect("/entry/student");
     return (
-      <main className="setup-message">
+      <main className="setup-message role-theme">
         <h1>SETU is getting ready</h1>
         <p>
           {error instanceof AppError
@@ -56,8 +54,7 @@ export default async function WorkspacePage({
     );
   }
   return (
-    <WorkspaceApp
-      initial={data}
+    <WorkspaceBoot
       section={section}
       supportEmail={process.env.PROGRAMME_CONTACT_EMAIL}
     />

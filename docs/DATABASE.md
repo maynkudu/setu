@@ -38,10 +38,12 @@ Better Auth creates and migrates the following tables. Exact generated columns f
 | `user`         | ID, Google name and email, verified-email flag, timestamps, image, and server-controlled role. |
 | `session`      | Persistent login token, user reference, expiration, and request metadata.                      |
 | `account`      | Google provider account linkage and provider token fields.                                     |
-| `verification` | Temporary verification records, including OAuth flow state.                                    |
+| `verification` | Temporary verification records. Google OAuth state uses an encrypted browser cookie.           |
 | `rateLimit`    | Shared authentication rate-limit counters.                                                     |
 
 Application roles are `student`, `mentor`, and `admin`. Programme eligibility lives in `profiles.verification`, independently of Google email verification.
+
+Google OAuth state expires after ten minutes and is consumed from its HttpOnly browser cookie. Successful callbacks still persist users, accounts and seven-day sessions in PostgreSQL. The state-storage configuration does not change table definitions or require a SQL migration.
 
 ## Programme tables
 
@@ -84,7 +86,7 @@ Programme UUIDs use `gen_random_uuid()`. Auth user IDs are text because Better A
 | Feedback                       | Unique author per mentorship, rating 1 to 5, known goal status.           |
 | Check-in rounds                | Round 1 or 2, unique per mentorship.                                      |
 | Upload shape                   | One to five parts, indexes zero to four, each part at most 1 MiB.         |
-| Test grants                    | Lowercase email and student/mentor role only.                             |
+| Account grants                 | Lowercase email and student/mentor role only.                             |
 
 Zod validates request text, URL formats, consent, enums, and field lengths before mutation. Transaction locks enforce rules that SQL row checks cannot express alone, such as ten counted sessions, no overlap, twenty documents, and approved participants. Read [BACKEND.md](BACKEND.md) for lock ordering and permission checks.
 
@@ -109,7 +111,7 @@ The runner uses a session advisory lock while it creates the schema and runs Bet
 
 Application migrations match `NNN-name.sql`. Add `002-description.sql` for the next change. An applied file with a changed checksum causes the runner to fail instead of silently rewriting migration history. Better Auth migrations are a separate phase before the application transaction. Do not assume both phases roll back as one unit.
 
-`MIGRATION_DATABASE_URL`, when set, overrides `DATABASE_URL` for the runner. Use a direct or session-pooler URI because session advisory locks cannot safely use a transaction pooler. Runtime SQL fully qualifies `setu` tables rather than relying on connection search paths.
+`MIGRATION_DATABASE_URL`, when set, overrides `DATABASE_URL` for the runner. Use a direct or session-pooler URI because session advisory locks cannot safely use a transaction pooler. The runner rejects port 6543 before connecting. It also rejects a hosted migration target when the runtime target is loopback. Clear inherited `MIGRATION_DATABASE_URL` for local tests. Runtime SQL fully qualifies `setu` tables rather than relying on connection search paths.
 
 ## Supabase isolation and permissions
 
@@ -126,3 +128,5 @@ Private messages and documents become inaccessible 30 days after ending. Mainten
 Most programme foreign keys do not cascade on user deletion. Removing an account with programme history therefore requires a reviewed deletion process. There is no automated deletion command or self-service deletion screen.
 
 Documents are currently stored in PostgreSQL. That keeps small private file writes transactional, but increases database size, backup cost, and server memory use. A future object-storage migration needs equivalent private access checks, cleanup guarantees, and metadata consistency. See [SYSTEM.md](SYSTEM.md) for the current scale boundaries.
+
+Every mentor needs an unrevoked `access_grants` row. Explicit administrator rules take precedence. An active grant can admit an alumnus using a student-domain email as a mentor. Without a grant, student-domain admission applies. Existing account roles cannot be changed through whitelisting. No schema migration is needed for the role-theme and session-configuration pass. `bun run db:check` reads table presence and auth schema without modifying data.

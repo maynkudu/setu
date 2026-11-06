@@ -4,6 +4,7 @@ import { PostgresDialect } from "kysely";
 import { getPool } from "./db";
 import { AppError } from "./domain";
 import { resolveEmailRole } from "./access";
+import { authOrigin } from "./auth-origin";
 
 function makeAuth() {
   if (
@@ -21,9 +22,27 @@ function makeAuth() {
       schemaName: "setu",
       transaction: true,
     },
-    baseURL: process.env.BETTER_AUTH_URL,
+    baseURL: authOrigin(),
     secret: process.env.BETTER_AUTH_SECRET,
+    account: { storeStateStrategy: "cookie" },
+    session: {
+      expiresIn: 7 * 24 * 60 * 60,
+      updateAge: 24 * 60 * 60,
+      cookieCache: { enabled: false },
+    },
     user: {
+      validateUserInfo: async ({ user }) => {
+        if (
+          !user.emailVerified ||
+          typeof user.email !== "string" ||
+          !(await resolveEmailRole(user.email))
+        )
+          return {
+            error: "programme_access_required",
+            errorDescription:
+              "Use a verified Google account with programme access.",
+          };
+      },
       additionalFields: {
         role: { type: "string", defaultValue: "mentor", input: false },
       },
@@ -43,7 +62,7 @@ function makeAuth() {
             const role = await resolveEmailRole(user.email);
             if (!role || !user.emailVerified)
               throw new APIError("FORBIDDEN", {
-                message: "Use an eligible, verified IITM Google account.",
+                message: "Use a verified Google account with programme access.",
               });
             return { data: { ...user, role } };
           },
@@ -53,9 +72,11 @@ function makeAuth() {
     rateLimit: { enabled: true, storage: "database", window: 60, max: 30 },
   });
 }
-let auth: ReturnType<typeof makeAuth> | undefined;
+const globalAuth = globalThis as typeof globalThis & {
+  setuAuth?: ReturnType<typeof makeAuth>;
+};
 export function getAuth() {
-  return (auth ??= makeAuth());
+  return (globalAuth.setuAuth ??= makeAuth());
 }
 export async function identity(headers: Headers) {
   const session = await getAuth().api.getSession({ headers });
@@ -66,7 +87,7 @@ export async function identity(headers: Headers) {
   )
     throw new AppError(
       403,
-      "Use your eligible IITM Google account or an account approved for testing. Contact the programme team if access has changed.",
+      "Your account no longer has programme access. Contact IIC to check your access.",
     );
   return {
     id: session.user.id,

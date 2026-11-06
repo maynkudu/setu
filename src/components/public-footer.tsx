@@ -1,18 +1,27 @@
 import Link from "next/link";
 import { Brand } from "./ui";
+import { AnimatedFooter } from "./blank/animated-footer";
 
 export const policyLinks = [
-  { href: "/policies/privacy", label: "Privacy" },
+  { href: "/policies/privacy", label: "Privacy policy" },
   { href: "/policies/terms", label: "Terms of use" },
   { href: "/policies/conduct", label: "Mentorship conduct" },
-  { href: "/policies/cookies", label: "Cookies" },
+  { href: "/policies/cookies", label: "Cookie policy" },
   { href: "/policies/accessibility", label: "Accessibility" },
 ] as const;
 
-export function PublicFooter() {
+export function PublicFooter({ immersive = false }: { immersive?: boolean }) {
   const contact = process.env.PROGRAMME_CONTACT_EMAIL;
+  if (immersive)
+    return (
+      <AnimatedFooter
+        contact={contact}
+        year={new Date().getFullYear()}
+        policies={policyLinks}
+      />
+    );
   return (
-    <footer className="site-footer">
+    <footer className="footer section">
       <div className="footer-top">
         <div className="footer-about">
           <Brand />
@@ -23,14 +32,12 @@ export function PublicFooter() {
           </p>
         </div>
         <nav aria-label="Programme links">
-          <h2>SETU</h2>
           <Link href="/association">About and association</Link>
           <Link href="/entry/mentor">Become a mentor</Link>
           <Link href="/entry/admin">IIC staff sign in</Link>
           {contact && <a href={`mailto:${contact}`}>Contact the programme</a>}
         </nav>
         <nav aria-label="Policies">
-          <h2>Policies</h2>
           {policyLinks.map((link) => (
             <Link key={link.href} href={link.href}>
               {link.label}

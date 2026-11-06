@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./motion.css";
-import "./public-pages.css";
-import "lenis/dist/lenis.css";
+import "./branding.css";
+import "./workspace.css";
+import "./page-transitions.css";
 import { SiteMotion } from "@/components/site-motion";
 const body = localFont({
   src: [
@@ -30,6 +31,13 @@ export const metadata: Metadata = {
   },
   description:
     "Career guidance for degree-level IIT Madras BS students, with alumni mentors and IIC support.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 export default function RootLayout({
   children,

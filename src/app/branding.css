@@ -1,0 +1,12 @@
+.brand-logo {
+  width: 92px;
+  height: auto;
+  display: block;
+  filter: brightness(0);
+}
+.entry-story .brand-logo {
+  filter: none;
+}
+.mobile-brand .brand-logo {
+  width: 76px;
+}

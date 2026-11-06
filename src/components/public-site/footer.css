@@ -1,0 +1,200 @@
+.setu-public .connection-footer {
+  background: #411629;
+  color: #f6edf1;
+}
+.connection-footer-stage {
+  position: relative;
+  height: min(1050px, 100svh);
+  min-height: 760px;
+  overflow: clip;
+  isolation: isolate;
+}
+.connection-footer-entry {
+  position: relative;
+  z-index: 2;
+  padding: clamp(65px, 7vw, 110px) 24px 0;
+  text-align: center;
+}
+.setu-public .connection-footer-heading {
+  margin: 0;
+  overflow: clip;
+  font-size: clamp(58px, 7.5vw, 115px);
+  line-height: 0.98;
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  padding-bottom: 0.14em;
+}
+.connection-footer-heading > span {
+  display: block;
+}
+.connection-footer-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 25px;
+  margin-top: 25px;
+}
+.connection-footer-actions .text-link {
+  font-size: 13px;
+}
+.ascii-hands {
+  position: absolute;
+  width: 100%;
+  height: 40%;
+  left: 0;
+  top: 32%;
+  z-index: 1;
+}
+.ascii-reveal {
+  position: absolute;
+  top: 0;
+  width: 57%;
+  height: 100%;
+}
+.ascii-left {
+  left: -10%;
+}
+.ascii-right {
+  right: -10%;
+}
+.ascii-hand {
+  height: 100%;
+  width: 100%;
+}
+.ascii-hand canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.connection-footer-wordmark {
+  position: absolute;
+  left: 12%;
+  width: 76%;
+  height: 40%;
+  bottom: 65px;
+  overflow: clip;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  z-index: 2;
+}
+.connection-footer-wordmark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.connection-footer-note {
+  position: absolute;
+  bottom: 28px;
+  left: 24px;
+  right: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: #dab8c7;
+}
+.connection-footer-links {
+  padding: 35px clamp(24px, 5vw, 90px) 25px;
+  border-top: 1px solid #ffffff26;
+  display: grid;
+  gap: 32px;
+}
+.connection-footer-links nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px 30px;
+  font-size: 13px;
+}
+.connection-footer-links a:hover {
+  color: #e8bbcc;
+}
+.connection-footer-base {
+  padding-top: 28px;
+  border-top: 1px solid #ffffff26;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 11px;
+  color: #dab8c7;
+}
+@media (max-width: 800px) {
+  .connection-footer-stage {
+    min-height: 720px;
+  }
+  .ascii-hands {
+    top: 35%;
+    height: 28%;
+  }
+  .ascii-reveal {
+    width: 70%;
+  }
+  .ascii-left {
+    left: -18%;
+  }
+  .ascii-right {
+    right: -18%;
+  }
+  .connection-footer-wordmark {
+    left: 7%;
+    width: 86%;
+    height: 32%;
+    bottom: 85px;
+  }
+}
+@media (max-width: 560px) {
+  .connection-footer-stage {
+    min-height: 650px;
+    height: 90svh;
+    max-height: 800px;
+  }
+  .connection-footer-entry {
+    padding-top: 58px;
+  }
+  .setu-public .connection-footer-heading {
+    font-size: clamp(48px, 13vw, 70px);
+  }
+  .connection-footer-actions {
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 24px;
+  }
+  .ascii-hands {
+    top: 43%;
+    height: 22%;
+  }
+  .ascii-reveal {
+    width: 80%;
+  }
+  .ascii-left {
+    left: -22%;
+  }
+  .ascii-right {
+    right: -22%;
+  }
+  .connection-footer-wordmark {
+    left: 6%;
+    width: 88%;
+    bottom: 72px;
+    height: 26%;
+  }
+  .connection-footer-note {
+    font-size: 11px;
+  }
+  .connection-footer-links nav {
+    justify-content: start;
+    gap: 16px 24px;
+    font-size: 12px;
+  }
+  .connection-footer-base {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  .connection-footer-base span:nth-child(2) {
+    width: 100%;
+    order: 3;
+  }
+}

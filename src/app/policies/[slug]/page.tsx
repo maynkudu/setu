@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Brand } from "@/components/ui";
-import { PublicFooter, policyLinks } from "@/components/public-footer";
+import { PublicPage } from "@/components/public-page";
+import { policyLinks } from "@/components/public-footer";
 import { policies } from "@/content/policies";
 
 function policyFor(slug: string) {
@@ -31,17 +31,8 @@ export default async function PolicyPage({
   const policy = policyFor(slug);
   if (!policy) notFound();
   return (
-    <div className="public-page">
-      <a href="#main" className="skip-link">
-        Skip to content
-      </a>
-      <nav className="public-nav" aria-label="Main navigation">
-        <Brand />
-        <Link className="plain-link" href="/">
-          Back to SETU
-        </Link>
-      </nav>
-      <main id="main" className="policy-layout">
+    <PublicPage>
+      <div className="policy section">
         <aside>
           <span className="program-line">Programme information</span>
           <nav aria-label="Policy navigation">
@@ -59,11 +50,11 @@ export default async function PolicyPage({
             <Link href="/association">About and association</Link>
           </nav>
         </aside>
-        <article className="policy-article">
+        <article>
           <header>
-            <span className="policy-date">Updated 5 November 2026</span>
+            <span className="document-label">Updated 5 November 2026</span>
             <h1>{policy.title}</h1>
-            <p>{policy.intro}</p>
+            <p className="policy-intro">{policy.intro}</p>
           </header>
           {policy.sections.map((section) => (
             <section key={section.title}>
@@ -74,8 +65,7 @@ export default async function PolicyPage({
             </section>
           ))}
         </article>
-      </main>
-      <PublicFooter />
-    </div>
+      </div>
+    </PublicPage>
   );
 }

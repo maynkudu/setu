@@ -1,7 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import gsap from "gsap";
+import { WorkspaceNavigation } from "./blank/switch-on-hover-tabs";
 import { z } from "zod";
 import { areas, workspaceSchema, type Workspace } from "@/lib/domain";
 import { Avatar, Brand, Empty, Icon, Tag, type IconName } from "./ui";
@@ -41,7 +43,7 @@ const adminNav: { path: string; label: string; icon: IconName }[] = [
   { path: "mentorships", label: "Mentorships", icon: "book" },
   { path: "followups", label: "Follow-ups", icon: "bell" },
   { path: "analytics", label: "Analytics", icon: "chart" },
-  { path: "access", label: "Test access", icon: "shield" },
+  { path: "access", label: "Account access", icon: "shield" },
 ];
 const commonNav: { path: string; label: string; icon: IconName }[] = [
   { path: "profile", label: "My profile", icon: "user" },
@@ -193,32 +195,73 @@ export function WorkspaceApp({
   supportEmail?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [data, setData] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const request = useRef<AbortController | null>(null);
+  const shell = useRef<HTMLDivElement>(null);
+  const previousPath = useRef(pathname);
   const menu = useRef<HTMLDialogElement>(null);
   const refresh = useCallback(async () => {
-    const response = await fetch("/api/workspace", { cache: "no-store" });
-    if (response.status === 401) {
-      router.push("/entry/student");
-      return;
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setRefreshing(true);
+    try {
+      const response = await fetch("/api/workspace", {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      if (response.status === 401) {
+        router.push(`/entry/${initial.me.role}`);
+        return;
+      }
+      if (response.status === 403) {
+        router.push(`/entry/${initial.me.role}?error=access`);
+        return;
+      }
+      if (!response.ok) throw new Error("Could not refresh your workspace.");
+      const next = workspaceSchema.parse(await response.json());
+      if (!controller.signal.aborted) {
+        setData(next);
+        setError("");
+      }
+    } catch (failure) {
+      if (!controller.signal.aborted) throw failure;
+    } finally {
+      if (request.current === controller) setRefreshing(false);
     }
-    if (!response.ok) throw new Error("Could not refresh your workspace.");
-    setData(workspaceSchema.parse(await response.json()));
-  }, [router]);
+  }, [router, initial.me.role]);
+  const refreshInBackground = useCallback(() => {
+    void refresh().catch(() =>
+      setError(
+        "Could not update your workspace. Your last loaded data is still shown.",
+      ),
+    );
+  }, [refresh]);
+  useEffect(() => {
+    if (previousPath.current !== pathname) {
+      previousPath.current = pathname;
+      refreshInBackground();
+      document.getElementById("workspace-main")?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [pathname, refreshInBackground]);
+  useEffect(() => () => request.current?.abort(), []);
   useEffect(() => {
     const id = setInterval(() => {
-      if (document.visibilityState === "visible")
-        void refresh().catch(() => {});
+      if (document.visibilityState === "visible") refreshInBackground();
     }, 30000);
-    const focus = () => void refresh().catch(() => {});
+    const focus = refreshInBackground;
     window.addEventListener("focus", focus);
     return () => {
       clearInterval(id);
       window.removeEventListener("focus", focus);
     };
-  }, [refresh]);
+  }, [refreshInBackground]);
   useEffect(() => {
     if (!notice) return;
     const id = setTimeout(() => setNotice(""), 4500);
@@ -280,13 +323,21 @@ export function WorkspaceApp({
   async function logout() {
     setBusy(true);
     try {
-      await fetch("/api/auth/sign-out", {
+      const response = await fetch("/api/auth/sign-out", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: "{}",
       });
+      if (!response.ok)
+        throw new Error("Could not sign out. Please try again.");
       router.push("/");
       router.refresh();
+    } catch (failure) {
+      setError(
+        failure instanceof Error
+          ? failure.message
+          : "Could not sign out. Please try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -306,26 +357,26 @@ export function WorkspaceApp({
         ...commonNav.filter((n) => !admin || n.path !== "profile"),
       ]
     : [{ path: "profile", label: "My profile", icon: "user" }];
-  const current = approved ? section : "profile";
+  const requested = pathname.split("/")[2] ?? section;
+  const current = approved
+    ? (nav.find((n) => n.path === requested)?.path ?? "overview")
+    : "profile";
+  useEffect(() => {
+    const media = gsap.matchMedia();
+    media.add(
+      "(prefers-reduced-motion: no-preference)",
+      () => {
+        gsap.fromTo(
+          ".workspace-content",
+          { y: 10, opacity: 0.65 },
+          { y: 0, opacity: 1, duration: 0.22, ease: "power2.out" },
+        );
+      },
+      shell,
+    );
+    return () => media.revert();
+  }, [current]);
   const title = nav.find((n) => n.path === current)?.label ?? "Overview";
-  const links = nav.map((n) => (
-    <Link
-      key={n.path}
-      href={`/workspace/${n.path}`}
-      className={`nav-button ${current === n.path ? "selected" : ""}`}
-      aria-current={current === n.path ? "page" : undefined}
-      onClick={() => menu.current?.close()}
-    >
-      <Icon name={n.icon} />
-      {n.label}
-      {n.path === "notifications" &&
-        data.notifications.some((n) => !n.read) && (
-          <span className="counter">
-            {data.notifications.filter((n) => !n.read).length}
-          </span>
-        )}
-    </Link>
-  ));
   let content;
   if (current === "profile")
     content = (
@@ -460,7 +511,46 @@ export function WorkspaceApp({
       </div>
     );
   return (
-    <div className="app-shell">
+    <div
+      ref={shell}
+      className="app-shell role-theme"
+      data-role={me.role}
+      onClickCapture={(event) => {
+        if (
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
+        const anchor =
+          event.target instanceof Element ? event.target.closest("a") : null;
+        if (
+          !(anchor instanceof HTMLAnchorElement) ||
+          anchor.hasAttribute("download") ||
+          (anchor.target && anchor.target !== "_self")
+        )
+          return;
+        const destination = new URL(anchor.href);
+        const next = destination.pathname.split("/")[2] ?? "overview";
+        if (
+          destination.origin !== location.origin ||
+          !/^\/workspace(?:\/[^/]+)?\/?$/.test(destination.pathname) ||
+          !nav.some((n) => n.path === next)
+        )
+          return;
+        event.preventDefault();
+        event.stopPropagation();
+        menu.current?.close();
+        if (destination.pathname !== pathname)
+          window.history.pushState(
+            null,
+            "",
+            destination.pathname + destination.search + destination.hash,
+          );
+      }}
+    >
       <a className="skip-link" href="#workspace-main">
         Skip to workspace
       </a>
@@ -468,12 +558,19 @@ export function WorkspaceApp({
         <div>
           <Brand />
           <p className="program">
-            IIT Madras BS
-            <br />
-            Alumni mentorship programme
+            {admin
+              ? "IIC programme office"
+              : me.role === "mentor"
+                ? "The mentor workspace"
+                : "Your student workspace"}
           </p>
         </div>
-        <nav aria-label="Workspace navigation">{links}</nav>
+        <WorkspaceNavigation
+          items={nav}
+          current={current}
+          unread={data.notifications.filter((n) => !n.read).length}
+          label="Workspace navigation"
+        />
         <div className="support">
           <strong>Need IIC support?</strong>
           <p>Ask about eligibility, assignments or a programme concern.</p>
@@ -535,9 +632,16 @@ export function WorkspaceApp({
             </button>
           </div>
         </header>
-        <main className="app-body" id="workspace-main">
+        <main className="app-body" id="workspace-main" tabIndex={-1}>
           <div className="page-head">
             <div>
+              <span className="workspace-eyebrow">
+                {admin
+                  ? "Programme operations"
+                  : me.role === "mentor"
+                    ? "Share what you learned"
+                    : "IIT Madras BS mentorship"}
+              </span>
               <h1>
                 {current === "overview"
                   ? `Welcome, ${me.name.split(" ")[0] || "there"}`
@@ -547,15 +651,29 @@ export function WorkspaceApp({
                 {current === "overview"
                   ? admin
                     ? "Requests, eligibility reviews, and the next actions for IIC."
-                    : "Your goal, your conversations, and what comes next."
+                    : me.role === "mentor"
+                      ? "Your mentee, their progress, and your next conversation."
+                      : "Your goal, your conversations, and what comes next."
                   : me.email}
               </p>
             </div>
-            <span className="date-label">{date(data.asOf)}</span>
+            <div className="workspace-sync" role="status">
+              <span>
+                {refreshing ? "Updating workspace..." : "Workspace up to date"}
+              </span>
+              <span className="date-label">{date(data.asOf)}</span>
+            </div>
           </div>
           {error && (
             <div className="error error-banner" role="alert">
               {error}
+              <button
+                className="btn ghost"
+                onClick={refreshInBackground}
+                disabled={refreshing}
+              >
+                Retry
+              </button>
               <button aria-label="Dismiss error" onClick={() => setError("")}>
                 <Icon name="x" />
               </button>
@@ -604,8 +722,13 @@ export function WorkspaceApp({
             <Icon name="x" />
           </button>
         </div>
-        <nav className="dialog-body" aria-label="Mobile navigation">
-          {links}
+        <div className="dialog-body">
+          <WorkspaceNavigation
+            items={nav}
+            current={current}
+            unread={data.notifications.filter((n) => !n.read).length}
+            label="Mobile navigation"
+          />
           <button
             className="btn secondary"
             disabled={busy}
@@ -613,7 +736,7 @@ export function WorkspaceApp({
           >
             Sign out
           </button>
-        </nav>
+        </div>
       </dialog>
       <div className="toast" role="status">
         {notice}

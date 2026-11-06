@@ -22,7 +22,7 @@ const people = [
     id: "qa-mentor",
     role: "mentor",
     name: "Aditi Rao",
-    email: "qa-mentor@alumni.iitm.ac.in",
+    email: "qa-mentor@example.com",
   },
   {
     id: "qa-admin",
@@ -35,10 +35,15 @@ await mkdir(".plannotator/setu-app/fixtures", { recursive: true });
 const context = await getAuth().$context;
 for (const p of people) {
   await getPool().query(
-    'INSERT INTO setu."user"(id,name,email,"emailVerified","createdAt","updatedAt",role) VALUES ($1,$2,$3,true,now(),now(),$4) ON CONFLICT (id) DO NOTHING',
+    'INSERT INTO setu."user"(id,name,email,"emailVerified","createdAt","updatedAt",role) VALUES ($1,$2,$3,true,now(),now(),$4) ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email,name=EXCLUDED.name,role=EXCLUDED.role',
     [p.id, p.name, p.email, p.role],
   );
   await currentProfile(p);
+  if (p.role === "admin")
+    await getPool().query(
+      "INSERT INTO setu.access_grants(email,role,reason,granted_by) VALUES ('qa-mentor@example.com','mentor','Local QA mentor invitation',$1) ON CONFLICT(email) DO UPDATE SET revoked_at=NULL",
+      [p.id],
+    );
   const session = await context.internalAdapter.createSession(p.id);
   if (!session) throw new Error("Could not create QA session");
   const cookie = await serializeSignedCookie(
@@ -54,11 +59,13 @@ for (const p of people) {
       {
         name: pair.slice(0, index),
         value: pair.slice(index + 1),
-        domain: "setu.localhost",
+        domain: new URL(
+          process.env.BETTER_AUTH_URL ?? "http://setu.localhost:1355",
+        ).hostname,
         path: "/",
-        expires: -1,
+        expires: Math.floor(new Date(session.expiresAt).getTime() / 1000),
         httpOnly: true,
-        secure: true,
+        secure: (process.env.BETTER_AUTH_URL ?? "").startsWith("https:"),
         sameSite: "Lax",
       },
     ],

@@ -4,8 +4,23 @@ import { getMigrations } from "better-auth/db/migration";
 import { getAuth } from "../src/lib/auth";
 import { getPool } from "../src/lib/db";
 
+const runtimeUrl = new URL(process.env.DATABASE_URL ?? "postgresql://invalid");
+const migrationUrl = new URL(
+  process.env.MIGRATION_DATABASE_URL || runtimeUrl.href,
+);
+if (
+  ["127.0.0.1", "localhost"].includes(runtimeUrl.hostname) &&
+  !["127.0.0.1", "localhost"].includes(migrationUrl.hostname)
+)
+  throw new Error(
+    "Refusing a hosted migration while DATABASE_URL points to loopback. Clear MIGRATION_DATABASE_URL for local verification, or supply matching hosted runtime configuration for a hosted migration.",
+  );
 if (process.env.MIGRATION_DATABASE_URL)
   process.env.DATABASE_URL = process.env.MIGRATION_DATABASE_URL;
+if (new URL(process.env.DATABASE_URL ?? "postgresql://invalid").port === "6543")
+  throw new Error(
+    "Migrations need a direct or session-pooler connection. Set MIGRATION_DATABASE_URL to the port 5432 URI. Transaction-pooler port 6543 cannot hold the migration advisory lock.",
+  );
 const pool = getPool();
 const client = await pool.connect();
 try {
